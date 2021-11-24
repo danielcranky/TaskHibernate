@@ -63,6 +63,7 @@ public class UserDaoHibernateImpl implements UserDao {
             query.setParameter("age", age);
             query.executeUpdate();
             transaction.commit();
+            System.out.println("User с именем - " + name + " добавлен в базу данных");
 
         } catch (HibernateException hibernateException) {
             hibernateException.printStackTrace();
