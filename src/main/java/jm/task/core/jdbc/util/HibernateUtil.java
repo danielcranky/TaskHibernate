@@ -11,26 +11,23 @@ import org.hibernate.service.ServiceRegistry;
 
 
 public class HibernateUtil {
+    private static String DBdriver = "com.mysql.cj.jdbc.Driver";
+    private static String DBurl = "jdbc:mysql://localhost:3306/test?useSSL=false";
+    private static String DBuser = "root";
+    private static String DBpass = "root";
     private static SessionFactory sessionFactory;
 
     public static SessionFactory getSessionFactory() {
         if (sessionFactory == null) {
             try {
                 Configuration configuration = new Configuration();
-
-                // Hibernate settings equivalent to hibernate.cfg.xml's properties
                 Properties settings = new Properties();
-                settings.put(Environment.DRIVER, "com.mysql.cj.jdbc.Driver");
-                settings.put(Environment.URL, "jdbc:mysql://localhost:3306/test?useSSL=false");
-                settings.put(Environment.USER, "root");
-                settings.put(Environment.PASS, "pass");
-                settings.put(Environment.DIALECT, "org.hibernate.dialect.MySQL5Dialect");
+                settings.put(Environment.DRIVER, DBdriver);
+                settings.put(Environment.URL, DBurl);
+                settings.put(Environment.USER, DBuser);
+                settings.put(Environment.PASS, DBpass);
 
-                settings.put(Environment.SHOW_SQL, "true");
-
-                settings.put(Environment.CURRENT_SESSION_CONTEXT_CLASS, "thread");
-
-                settings.put(Environment.HBM2DDL_AUTO, "create-drop");
+                settings.put(Environment.SHOW_SQL, "false");
 
                 configuration.setProperties(settings);
 

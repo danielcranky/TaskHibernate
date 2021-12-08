@@ -7,11 +7,14 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 public class UserDaoHibernateImpl implements UserDao {
+    private Transaction transaction;
+
     public UserDaoHibernateImpl() {
 
     }
@@ -24,12 +27,13 @@ public class UserDaoHibernateImpl implements UserDao {
 
         try(Session session = HibernateUtil.getSessionFactory().openSession()) {
 
-            Transaction transaction = session.beginTransaction();
+            transaction = session.beginTransaction();
             Query query = session.createSQLQuery(sql);
             query.executeUpdate();
             transaction.commit();
 
         } catch (HibernateException hibernateException) {
+            transaction.rollback();
             hibernateException.printStackTrace();
         }
     }
@@ -40,32 +44,29 @@ public class UserDaoHibernateImpl implements UserDao {
 
         try(Session session = HibernateUtil.getSessionFactory().openSession()) {
 
-            Transaction transaction = session.beginTransaction();
+            transaction = session.beginTransaction();
             Query query = session.createSQLQuery(sql);
             query.executeUpdate();
             transaction.commit();
 
         } catch (HibernateException hibernateException) {
+            transaction.rollback();
             hibernateException.printStackTrace();
         }
     }
 
     @Override
     public void saveUser(String name, String lastName, byte age) {
-        String sql = "INSERT INTO Users(name, lastName, age) VALUES (:name, :lastName, :age)";
 
         try(Session session = HibernateUtil.getSessionFactory().openSession()) {
 
-            Transaction transaction = session.beginTransaction();
-            Query query = session.createSQLQuery(sql).addEntity(User.class);
-            query.setParameter("name", name);
-            query.setParameter("lastName", lastName);
-            query.setParameter("age", age);
-            query.executeUpdate();
+            transaction = session.beginTransaction();
+            session.save(new User(name, lastName, age));
             transaction.commit();
             System.out.println("User с именем - " + name + " добавлен в базу данных");
 
         } catch (HibernateException hibernateException) {
+            transaction.rollback();
             hibernateException.printStackTrace();
         }
 
@@ -74,29 +75,29 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void removeUserById(long id) {
-        String sql = "DELETE FROM Users WHERE id = :id";
 
         try(Session session = HibernateUtil.getSessionFactory().openSession()) {
 
-            Transaction transaction = session.beginTransaction();
-            Query query = session.createSQLQuery(sql);
-            query.setParameter("id", id);
-            query.executeUpdate();
+            transaction = session.beginTransaction();
+            User user = new User();
+            user.setId(id);
+            session.delete(user);
             transaction.commit();
 
         } catch (HibernateException hibernateException) {
+            transaction.rollback();
             hibernateException.printStackTrace();
         }
     }
 
     @Override
     public List<User> getAllUsers() {
-        String sql = "SELECT * FROM Users";
+        String hql = "FROM User";
         List<User> allUsers = new ArrayList();
 
         try(Session session = HibernateUtil.getSessionFactory().openSession()) {
 
-            Query query = session.createSQLQuery(sql).addEntity(User.class);
+            Query query = session.createQuery(hql);
             allUsers = query.list();
 
         } catch (HibernateException hibernateException) {
@@ -108,16 +109,17 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void cleanUsersTable() {
-        String sql = "TRUNCATE TABLE Users";
+        String hql = "DELETE FROM User";
 
         try(Session session = HibernateUtil.getSessionFactory().openSession()) {
 
-            Transaction transaction = session.beginTransaction();
-            Query query = session.createSQLQuery(sql);
+            transaction = session.beginTransaction();
+            Query query = session.createQuery(hql);
             query.executeUpdate();
             transaction.commit();
 
         } catch (HibernateException hibernateException) {
+            transaction.rollback();
             hibernateException.printStackTrace();
         }
     }
